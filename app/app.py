@@ -1,7 +1,11 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
+
+import app.models
+
 from .orm import create_tables
-from .routers import cars
+from .routers import cars, purchases
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -16,7 +20,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.include_router(cars.router, prefix="/cars", tags=["Cars"])
+app.include_router(cars.router)
+app.include_router(purchases.router)
 
 @app.get("/")
 async def read_root():
