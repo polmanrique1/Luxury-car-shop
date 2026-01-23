@@ -4,7 +4,6 @@ from typing import Optional
 
 class PurchaseCreate(BaseModel):
     car_id: int
-    user_id: int
 
 
 class PurchaseResponse(PurchaseCreate):

@@ -1,10 +1,14 @@
 from fastapi import APIRouter, Depends, HTTPException
+from app.models.User import User
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
 from app.models.Purchase import Purchase
+from app.models.Car import Car
 from app.orm import async_session_maker
 from app.schemas.purchase_schemas import PurchaseCreate, PurchaseResponse
+from app.auth.jwt import get_current_user
+from app.services.email import send_mail
 
 router = APIRouter(prefix="/purchases", tags=["Purchases"])
 
@@ -40,20 +44,37 @@ async def get_user_purchases(userId: int, db: AsyncSession = Depends(get_db)):
     return user_purchases
 
 @router.post("/", response_model=PurchaseResponse)
-async def add_purchase(newPurchase: PurchaseCreate ,db: AsyncSession = Depends(get_db)): 
+async def make_purchase( newPurchase: PurchaseCreate, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)): 
     try:
-        new_purchase = Purchase(
-                car_id= newPurchase.car_id,
-                user_id= newPurchase.user_id
-            )
+        
+        car_result = await db.execute(select(Car).where(Car.id == newPurchase.car_id))
+        car = car_result.scalar_one_or_none()
+        
+        if not car:
+            raise HTTPException( status_code=404, detail="Car not found" )
+        
+        new_purchase = Purchase (
+            car_id=newPurchase.car_id,
+            user_id=current_user.id  
+        )
         
         db.add(new_purchase)
         await db.commit()
         await db.refresh(new_purchase)
+        
+        try:
+            send_mail(current_user.email, car)
+        except Exception as email_error:
 
+            print(f"Email sending failed: {email_error}")
+        
         return new_purchase
-    except HTTPException as e:
-        return {"message": "something gone wrong during the insertion"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f"Something went wrong during the purchase: {str(e)}")
 
 @router.delete("/{id}")
 async def delete_purchase(id: int, db: AsyncSession = Depends(get_db)):
