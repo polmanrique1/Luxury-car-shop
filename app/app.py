@@ -4,7 +4,9 @@ from contextlib import asynccontextmanager
 import app.models
 
 from .orm import create_tables
-from .routers import cars, purchases
+from .routers import cars, purchases, users
+from .auth import jwt
+
 
 
 @asynccontextmanager
@@ -22,6 +24,8 @@ app = FastAPI(
 
 app.include_router(cars.router)
 app.include_router(purchases.router)
+app.include_router(jwt.router)
+app.include_router(users.router)
 
 @app.get("/")
 async def read_root():
