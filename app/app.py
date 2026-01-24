@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 import app.models
 
 from .orm import create_tables
-from .routers import cars, purchases, users
+from .routers import budget, cars, purchases, users
 from .auth import jwt
 
 
@@ -26,6 +26,7 @@ app.include_router(cars.router)
 app.include_router(purchases.router)
 app.include_router(jwt.router)
 app.include_router(users.router)
+app.include_router(budget.router)
 
 @app.get("/")
 async def read_root():
