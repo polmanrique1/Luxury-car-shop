@@ -70,6 +70,6 @@ To build the image and start the services for the first time, run:
 
 docker compose up --build
 
-To stop the image, run :
+To stop the image, run:
 
 docker compose down
