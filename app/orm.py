@@ -1,7 +1,8 @@
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+import os
 
-DATABASE_URL = "sqlite+aiosqlite:///./luxury.db"
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///app/luxury.db")
 
 class Base(DeclarativeBase):
     pass
